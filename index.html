@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<title>Trò chơi rút thăm</title>
+<style>
+  html, body {
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    height: 100%;
+    width: 100%;
+    background: black;
+  }
+  canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+  #controls {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    z-index: 10;
+  }
+  input, button {
+    padding: 6px 10px;
+    margin: 4px;
+    font-size: 14px;
+  }
+</style>
+</head>
+<body>
+<div id="controls">
+  <input type="number" id="turnInput" placeholder="Số lượt" />
+  <button id="startBtn">Bắt đầu</button>
+  <button id="resetBtn">Reset</button>
+</div>
+<canvas id="gameCanvas"></canvas>
+
+<script>
+const canvas = document.getElementById("gameCanvas");
+const ctx = canvas.getContext("2d");
+
+let W = window.innerWidth;
+let H = window.innerHeight;
+canvas.width = W;
+canvas.height = H;
+
+// ========== Config ==============
+const cardW = 100, cardH = 70;
+const cols = 5, rows = 4;
+let startX, startY, marginX, marginY;
+
+// Data
+let tickets = [];
+let values = [];
+let turnsLeft = 0, maxTurns = 0, totalMoney = 0;
+let message = "";
+let msgColor = "red";
+let gameStarted = false;
+
+// Load ảnh
+const moneyImage = new Image();
+moneyImage.src = "https://static.vecteezy.com/system/resources/previews/028/605/916/non_2x/dollar-3d-rendering-icon-illustration-free-png.png"; // link ảnh tiền
+
+const background = new Image();
+background.src = "https://static.vecteezy.com/system/resources/previews/005/724/127/large_2x/happy-birthday-background-design-with-realistic-bunch-of-flying-golden-balloons-free-vector.jpg"; // link ảnh nền
+
+
+// Các giá trị thăm
+const allValues = [
+  ...Array(5).fill(500000),
+  ...Array(4).fill(200000),
+  ...Array(4).fill(100000),
+  ...Array(3).fill(50000),
+  ...Array(2).fill(20000),
+  ...Array(2).fill(10000),
+];
+
+function initTickets() {
+  tickets = [];
+  values = [...allValues];
+  shuffle(values);
+
+  marginX = (W - cols * cardW) / (cols + 1);
+  marginY = (H - rows * cardH) / (rows + 1);
+  startX = marginX;
+  startY = marginY + 50;
+
+  for (let i = 0; i < values.length; i++) {
+    let col = i % cols;
+    let row = Math.floor(i / cols);
+    let x = startX + col * (cardW + marginX);
+    let y = startY + row * (cardH + marginY);
+    tickets.push({x, y, value: values[i], flipped: false});
+  }
+}
+
+function shuffle(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    let j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+}
+
+function setMessage(msg, color="white") {
+  message = msg;
+  msgColor = color;
+}
+
+function draw() {
+  ctx.drawImage(background, 0, 0, W, H);
+
+  // Vẽ thăm
+  for (let t of tickets) {
+    if (t.flipped) {
+      ctx.fillStyle = "red";
+      ctx.font = "20px Tahoma";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText(t.value.toLocaleString() + " đ", t.x + cardW/2, t.y + cardH/2);
+    } else {
+      ctx.drawImage(moneyImage, t.x, t.y, cardW, cardH);
+    }
+  }
+
+  // Vẽ thông tin
+  ctx.fillStyle = "black";
+  ctx.font = "18px Tahoma";
+  ctx.textAlign = "left";
+  ctx.fillText(`Lượt còn lại: ${turnsLeft}`, 20, H - 60);
+  ctx.fillText(`Tổng tiền: ${totalMoney.toLocaleString()} đ`, 20, H - 35);
+
+  ctx.fillStyle = msgColor;
+  ctx.fillText(message, 250, H - 35);
+}
+
+function flipAnimation(ticket) {
+  let scale = 1;
+  let shrinking = true;
+
+  function animate() {
+    draw();
+
+    ctx.save();
+    ctx.translate(ticket.x + cardW / 2, ticket.y + cardH / 2);
+    ctx.scale(scale, 1);
+    ctx.translate(-cardW / 2, -cardH / 2);
+
+    if (shrinking) {
+      ctx.drawImage(moneyImage, 0, 0, cardW, cardH);
+    } else {
+      ctx.fillStyle = "red";
+      ctx.font = "20px Tahoma";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText(ticket.value.toLocaleString() + " đ", cardW/2, cardH/2);
+    }
+
+    ctx.restore();
+
+    if (shrinking) {
+      scale -= 0.2;
+      if (scale <= 0) {
+        shrinking = false;
+        ticket.flipped = true;
+        turnsLeft--;
+        totalMoney += ticket.value;
+        setMessage(`Bạn rút được ${ticket.value.toLocaleString()} đ`, "lime");
+      }
+      requestAnimationFrame(animate);
+    } else {
+      scale += 0.2;
+      if (scale < 1) {
+        requestAnimationFrame(animate);
+      } else {
+        draw();
+      }
+    }
+  }
+  animate();
+}
+
+// Click handler
+canvas.addEventListener("click", (e) => {
+  if (!gameStarted) return;
+  const rect = canvas.getBoundingClientRect();
+  const mouseX = e.clientX - rect.left;
+  const mouseY = e.clientY - rect.top;
+
+  for (let t of tickets) {
+    if (!t.flipped &&
+        mouseX >= t.x && mouseX <= t.x + cardW &&
+        mouseY >= t.y && mouseY <= t.y + cardH) {
+      if (turnsLeft > 0) {
+        flipAnimation(t);
+      } else {
+        setMessage("Bạn đã rút hết lượt!", "red");
+      }
+      break;
+    }
+  }
+});
+
+// Nút bấm
+document.getElementById("startBtn").onclick = () => {
+  let n = parseInt(document.getElementById("turnInput").value);
+  if (!isNaN(n) && 20>=n && n > 0) {
+    maxTurns = n;
+    turnsLeft = n;
+    totalMoney = 0;
+    initTickets();
+    gameStarted = true;
+    setMessage("Trò chơi bắt đầu!", "lime");
+  } else {
+    setMessage("Nhập số lượt hợp lệ!", "red");
+  }
+};
+
+document.getElementById("resetBtn").onclick = () => {
+  document.getElementById("turnInput").value = "";
+  maxTurns = 0;
+  turnsLeft = 0;
+  totalMoney = 0;
+  initTickets();
+  gameStarted = false;
+  setMessage("Đã reset.", "blue");
+};
+
+initTickets();
+function loop() {
+  draw();
+  requestAnimationFrame(loop);
+}
+loop();
+</script>
+</body>
+</html>
