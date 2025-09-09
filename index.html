@@ -38,6 +38,9 @@
 </div>
 <canvas id="gameCanvas"></canvas>
 
+<!-- Âm thanh -->
+<audio id="coinSound" src="coinsound.mp3"></audio>
+
 <script>
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
@@ -62,11 +65,10 @@ let gameStarted = false;
 
 // Load ảnh
 const moneyImage = new Image();
-moneyImage.src = "https://static.vecteezy.com/system/resources/previews/028/605/916/non_2x/dollar-3d-rendering-icon-illustration-free-png.png"; // link ảnh tiền
+moneyImage.src = "https://static.vecteezy.com/system/resources/previews/028/605/916/non_2x/dollar-3d-rendering-icon-illustration-free-png.png"; 
 
 const background = new Image();
-background.src = "https://static.vecteezy.com/system/resources/previews/005/724/127/large_2x/happy-birthday-background-design-with-realistic-bunch-of-flying-golden-balloons-free-vector.jpg"; // link ảnh nền
-
+background.src = "https://static.vecteezy.com/system/resources/previews/005/724/127/large_2x/happy-birthday-background-design-with-realistic-bunch-of-flying-golden-balloons-free-vector.jpg"; 
 
 // Các giá trị thăm
 const allValues = [
@@ -168,6 +170,9 @@ function flipAnimation(ticket) {
         turnsLeft--;
         totalMoney += ticket.value;
         setMessage(`Bạn rút được ${ticket.value.toLocaleString()} đ`, "lime");
+
+        // phát âm thanh
+        document.getElementById("coinSound").play();
       }
       requestAnimationFrame(animate);
     } else {
