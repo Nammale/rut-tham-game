@@ -141,6 +141,9 @@ function draw() {
 function flipAnimation(ticket) {
   let scale = 1;
   let shrinking = true;
+  // Phát âm thanh ngay khi flip bắt đầu
+  coinSound.currentTime = 0;
+  coinSound.play();
 
   function animate() {
     draw();
@@ -242,4 +245,5 @@ loop();
 </script>
 </body>
 </html>
+
 
