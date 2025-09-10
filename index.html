@@ -38,7 +38,7 @@
 </div>
 <canvas id="gameCanvas"></canvas>
 
-<!-- Nhạc hiệu ứng coin -->
+<!-- Âm thanh -->
 <audio id="coinSound" src="https://raw.githubusercontent.com/Nammale/rut-tham-game/main/coinsound.mp3"></audio>
 
 <script>
@@ -63,7 +63,7 @@ let message = "";
 let msgColor = "red";
 let gameStarted = false;
 
-// Load ảnh
+// Ảnh
 const moneyImage = new Image();
 moneyImage.src = "https://static.vecteezy.com/system/resources/previews/028/605/916/non_2x/dollar-3d-rendering-icon-illustration-free-png.png";
 
@@ -237,12 +237,22 @@ document.getElementById("resetBtn").onclick = () => {
   setMessage("Đã reset.", "blue");
 };
 
-initTickets();
+// Đợi ảnh load xong mới bắt đầu game
+let loaded = 0;
+[moneyImage, background].forEach(img => {
+  img.onload = () => {
+    loaded++;
+    if (loaded === 2) { // cả 2 ảnh load xong
+      initTickets();
+      loop();
+    }
+  };
+});
+
 function loop() {
   draw();
   requestAnimationFrame(loop);
 }
-loop();
 </script>
 </body>
 </html>
