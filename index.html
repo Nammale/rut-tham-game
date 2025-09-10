@@ -38,6 +38,9 @@
 </div>
 <canvas id="gameCanvas"></canvas>
 
+<!-- Nhạc hiệu ứng coin -->
+<audio id="coinSound" src="https://raw.githubusercontent.com/Nammale/rut-tham-game/main/coinsound.mp3"></audio>
+
 <script>
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
@@ -68,9 +71,7 @@ const background = new Image();
 background.src = "https://static.vecteezy.com/system/resources/previews/005/724/127/large_2x/happy-birthday-background-design-with-realistic-bunch-of-flying-golden-balloons-free-vector.jpg";
 
 // Âm thanh
-<audio id="bgMusic" src="https://raw.githubusercontent.com/Nammale/rut-tham-game/main/coinsound.mp3" autoplay loop></audio>
-
-");
+const coinSound = document.getElementById("coinSound");
 
 // Các giá trị thăm
 const allValues = [
@@ -245,5 +246,3 @@ loop();
 </script>
 </body>
 </html>
-
-
